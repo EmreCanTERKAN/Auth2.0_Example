@@ -1,41 +1,46 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using YourApp.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddGitHubAuthentication(builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
+app.MapGet("/", async context =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    if (context.User.Identity!.IsAuthenticated)
+    {
+        var name = context.User.Identity?.Name;
+        var profileUrl = context.User.FindFirst("urn:github:url")?.Value;
+        var avatarUrl = context.User.FindFirst("urn:github:avatar")?.Value;
 
-app.MapGet("/weatherforecast", () =>
+        await context.Response.WriteAsync($"""
+            <h1>Merhaba, {name}!</h1>
+            <img src="{avatarUrl}" width="100" />
+            <p><a href="{profileUrl}" target="_blank">GitHub Profiline Git</a></p>
+            <a href="/logout">Çýkýþ Yap</a>
+        """);
+    }
+    else
+    {
+        await context.Response.WriteAsync("<a href='/login'>GitHub ile Giriþ Yap</a>");
+    }
+});
+
+app.MapGet("/login", async context =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    await context.ChallengeAsync("GitHub", new AuthenticationProperties { RedirectUri = "/" });
+});
+
+app.MapGet("/logout", async context =>
+{
+    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    context.Response.Redirect("/");
+});
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
