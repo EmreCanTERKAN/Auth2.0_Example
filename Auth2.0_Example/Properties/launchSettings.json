@@ -7,8 +7,8 @@
       "applicationUrl": "https://localhost:7009;http://localhost:5033",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "GITHUB_CLIENT_ID": "Ov23liuENh6hXOBY4F02",
-        "GITHUB_CLIENT_SECRET": "77fce1c84afbc906cda13c3705bbc31e9198a82c"
+        "GITHUB_CLIENT_ID": "Ov23liuEwqd2",
+        "GITHUB_CLIENT_SECRET": "77fce1c84afbc932132131e9198a82c"
       }
     }
   },

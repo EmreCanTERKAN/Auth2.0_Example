@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using YourApp.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddGitHubAuthentication(builder.Configuration);
 
 var app = builder.Build();
 
